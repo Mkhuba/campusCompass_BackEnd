@@ -1,23 +1,33 @@
-import type e = require("express")
-import morgan from "morgan"
-import dotenv from "dotenv"
-import express from "express"
-import session from "express-session"
-import bodyParser from "body-parser"
-import cookieParser from "cookie-parser"
-import config from "./utils/config.ts"
-import initDB from "./db.ts"
-import locationsRoute from "./routes/locationRoute.ts"
-import adminRoute from "./routes/adminRoute.ts"
-import passport from "./middleware/passport.ts"
-import app from "./server.ts"
+import express from 'express';
+import http from 'http';
+import bodyParser from 'body-parser';
+import cookieParser from 'cookie-parser';
+import compression from 'compression';
+import cors from 'cors';
+import mongoose from 'mongoose';
 
-dotenv.config()
-initDB()
+import router from './router';
 
+const app = express();
 
-const server = app.listen(process.env.PORT, () => {
-  console.log(`Server is running on port ${process.env.PORT}`)
-})
+app.use(cors({
+    credentials: true,
+}));
 
-export default server;
+app.use(compression());
+app.use(cookieParser());
+app.use(bodyParser.json());
+
+const server = http.createServer(app);
+
+server.listen(8080, () => {
+    console.log('Server running on http//localhost:8080/');
+});
+
+const MONGO_URL = 'mongodb+srv://MkhubaCampusCompass:MkhubaCampusCompass@cluster0.op1gj63.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0'
+
+mongoose.Promise = Promise;
+mongoose.connect(MONGO_URL);
+mongoose.connection.on('error', (error: Error) => console.log(error));
+
+app.use('/', router());
